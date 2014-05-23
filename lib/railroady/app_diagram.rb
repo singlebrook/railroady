@@ -47,7 +47,15 @@ class AppDiagram
 
   def engines
     engines = []
-    engines = Rails::Application::Railties.engines if defined?(Rails)
+
+    if defined?(Rails)
+      engines = if Rails::Application::Railties.respond_to?(:engines)
+        Rails::Application::Railties.engines
+      else
+        Rails::Engine.subclasses.map(&:instance)
+      end
+    end
+
     engines
   end
 
