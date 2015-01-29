@@ -29,11 +29,13 @@ class OptionsStruct < OpenStruct
                      :plugins_models => false,
                      :engine_models => false,
                      :engine_controllers => false, 
+		     :include_concerns => false,
                      :root => '',
                      :show_belongs_to => false,
                      :hide_through => false,
                      :transitive => false,
                      :verbose => false,
+                     :alphabetize => false,
                      :xmi => false,
                      :command => '',
                      :config_file => 'config/environment',
@@ -77,6 +79,9 @@ class OptionsStruct < OpenStruct
               "  (for UML tools)") do |x|
         self.xmi = x
       end
+      opts.on("--alphabetize", "Sort methods alphabetically") do |a|
+        self.alphabetize = a
+      end
       opts.separator ""
       opts.separator "Models diagram options:"
       opts.on("-a", "--all", "Include all models", 
@@ -110,7 +115,9 @@ class OptionsStruct < OpenStruct
       opts.on("-z", "--engine-models", "Include engine models") do |em|
         self.engine_models = em
       end
-      
+      opts.on("--include-concerns", "Include models in concerns subdirectory") do |c|
+        self.include_concerns = c
+      end
       opts.on("-t", "--transitive", "Include transitive associations",
               "(through inheritance)") do |t|
         self.transitive = t
@@ -129,7 +136,6 @@ class OptionsStruct < OpenStruct
       opts.on("--engine-controllers", "Include engine controllers") do |ec|
         self.engine_controllers = ec
       end
-
       opts.separator ""
       opts.separator "Other options:"
       opts.on("-h", "--help", "Show this message") do

@@ -10,7 +10,8 @@ class DiagramGraph
 
   def initialize
     @diagram_type = ''
-    @show_label = false
+    @show_label   = false
+    @alphabetize  = false
     @nodes = []
     @edges = []
   end
@@ -31,11 +32,15 @@ class DiagramGraph
     @show_label = value
   end
 
+  def alphabetize= (flag)
+    @alphabetize = flag
+  end
+
 
   # Generate DOT graph
   def to_dot
     return dot_header +
-           @nodes.map{|n| dot_node n[0], n[1], n[2]}.join +
+           @nodes.map{|n| dot_node n[0], n[1], n[2], n[3]}.join +
            @edges.map{|e| dot_edge e[0], e[1], e[2], e[3]}.join +
            dot_footer
   end
@@ -51,7 +56,7 @@ class DiagramGraph
   # Build DOT diagram header
   def dot_header
     result = "digraph #{@diagram_type.downcase}_diagram {\n" +
-             "\tgraph[overlap=false, splines=true]\n"
+             "\tgraph[overlap=false, splines=true, bgcolor=\"none\"]\n"
     result += dot_label if @show_label
     return result
   end
@@ -74,11 +79,11 @@ class DiagramGraph
   end
 
   # Build a DOT graph node
-  def dot_node(type, name, attributes=nil)
+  def dot_node(type, name, attributes=nil, custom_options='')
     case type
       when 'model'
            options = 'shape=Mrecord, label="{' + name + '|'
-           options += attributes.join('\l')
+           options += attributes.sort_by { |s| @alphabetize ? s : nil }.join('\l')
            options += '\l}"'
       when 'model-brief'
            options = ''
@@ -88,9 +93,9 @@ class DiagramGraph
            options = 'shape=box'
       when 'controller'
            options = 'shape=Mrecord, label="{' + name + '|'
-           public_methods    = attributes[:public].join('\l')
-           protected_methods = attributes[:protected].join('\l')
-           private_methods   = attributes[:private].join('\l')
+           public_methods    = attributes[:public].sort_by    { |s| @alphabetize ? s : nil }.join('\l')
+           protected_methods = attributes[:protected].sort_by { |s| @alphabetize ? s : nil }.join('\l')
+           private_methods   = attributes[:private].sort_by   { |s| @alphabetize ? s : nil }.join('\l')
            options += public_methods + '\l|' + protected_methods + '\l|' +
                       private_methods + '\l'
            options += '}"'
@@ -102,6 +107,7 @@ class DiagramGraph
            # Return subgraph format
            return "subgraph cluster_#{name.downcase} {\n\tlabel = #{quote(name)}\n\t#{attributes.join("\n  ")}}"
     end # case
+    options = [options, custom_options].reject{|o| o.empty?}.join(', ')
     return "\t#{quote(name)} [#{options}]\n"
   end # dot_node
 

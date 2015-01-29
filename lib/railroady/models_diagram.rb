@@ -29,20 +29,21 @@ class ModelsDiagram < AppDiagram
   end
 
   def get_files(prefix ='')
-    files = !@options.specify.empty? ? Dir.glob(@options.specify) : Dir.glob(prefix << "app/models/**/*.rb")
+    files = !@options.specify.empty? ? Dir.glob(@options.specify) : Dir.glob(prefix + "app/models/**/*.rb")
     files += Dir.glob("vendor/plugins/**/app/models/*.rb") if @options.plugins_models
+    files -= Dir.glob(prefix + "app/models/concerns/**/*.rb") unless @options.include_concerns
     files += get_engine_files if @options.engine_models
     files -= Dir.glob(@options.exclude)
     files
   end
 
   def get_engine_files
-    engines.collect { |engine| Dir.glob("#{engine.root.to_s}/app/models/*.rb")}.flatten
+    engines.collect { |engine| Dir.glob("#{engine.root.to_s}/app/models/**/*.rb")}.flatten
   end
 
 
   def extract_class_name(filename)
-    filename.split('/').last.camelize.chomp(".rb")
+    filename.match(/.*\/models\/(.*).rb$/)[1].camelize
   end
 
   
